@@ -1,0 +1,44 @@
+.group {
+  display: grid;
+  gap: var(--spacing-2);
+}
+
+.item {
+  width: 18px;
+  height: 18px;
+
+  border-radius: 50%;
+  border: 2px solid var(--border);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--surface);
+  cursor: pointer;
+
+  transition: border var(--animation-duration-fast),
+              box-shadow var(--animation-duration-fast);
+}
+
+.item:hover {
+  border-color: var(--primary);
+}
+
+.item:focus {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+.indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.indicatorInner {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary);
+}

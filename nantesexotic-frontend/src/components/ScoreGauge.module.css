@@ -1,0 +1,40 @@
+.gaugeContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gauge {
+  transform: rotate(0deg);
+}
+
+.gaugeBackground {
+  fill: none;
+  stroke: var(--border);
+  opacity: 0.4;
+}
+
+.gaugeProgress {
+  fill: none;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s ease;
+}
+
+.scoreText {
+  position: absolute;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.scoreValue {
+  font-size: 1.5rem;
+}
+
+.scoreLabel {
+  font-size: 0.8rem;
+  margin-left: 2px;
+  color: var(--muted-foreground);
+}

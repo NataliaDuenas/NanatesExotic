@@ -1,0 +1,148 @@
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-7);
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: var(--spacing-5);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-5);
+  align-items: flex-start;
+}
+
+.mainInfo {
+  display: flex;
+  gap: var(--spacing-4);
+  align-items: flex-start;
+}
+
+.emoji {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: color-mix(in hsl, var(--primary), transparent 88%);
+  font-size: 1.6rem;
+}
+
+.cropName {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 900;
+}
+
+.scientificName {
+  margin: 2px 0 0 0;
+  font-style: italic;
+  color: var(--muted-foreground);
+}
+
+.badges {
+  margin-top: var(--spacing-3);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+}
+
+.scoreContainer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.body {
+  display: grid;
+  gap: var(--spacing-5);
+}
+
+.justification {
+  margin: 0;
+  color: color-mix(in hsl, var(--foreground), transparent 10%);
+}
+
+.scoresGrid {
+  display: grid;
+  gap: var(--spacing-3);
+}
+
+.scoreRow {
+  display: grid;
+  grid-template-columns: 120px 1fr 70px;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.scoreLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.scoreBarContainer {
+  width: 100%;
+}
+
+.miniProgress {
+  height: 9px;
+}
+
+.scoreValue {
+  text-align: right;
+  font-weight: 800;
+  color: var(--muted-foreground);
+}
+
+.separator {
+  margin: var(--spacing-2) 0;
+}
+
+.accordion {
+  display: grid;
+  gap: var(--spacing-3);
+}
+
+.accordionContent {
+  white-space: pre-wrap;
+  line-height: 1.5;
+  color: color-mix(in hsl, var(--foreground), transparent 10%);
+}
+
+@media (max-width: 900px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .scoreContainer {
+    justify-content: flex-start;
+  }
+  .scoreRow {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-2);
+  }
+  .scoreValue {
+    text-align: left;
+  }
+}
+
+.imageWrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: color-mix(in hsl, var(--border), transparent 60%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

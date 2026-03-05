@@ -1,0 +1,44 @@
+.item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.header {
+  margin: 0;
+}
+
+.trigger {
+  width: 100%;
+  background: transparent;
+  border: none;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: var(--spacing-4);
+  cursor: pointer;
+
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.icon {
+  transition: transform var(--animation-duration-fast);
+}
+
+.trigger[data-state="open"] .icon {
+  transform: rotate(180deg);
+}
+
+.content {
+  overflow: hidden;
+  border-top: 1px solid var(--border);
+}
+
+.contentInner {
+  padding: var(--spacing-4);
+  color: color-mix(in hsl, var(--foreground), transparent 10%);
+}

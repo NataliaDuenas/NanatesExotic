@@ -1,0 +1,30 @@
+.formItem {
+  display: grid;
+  gap: var(--spacing-2);
+}
+
+.formLabel {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--foreground);
+}
+
+.formControl {
+  width: 100%;
+}
+
+.formDescription {
+  margin: 0;
+  font-size: 0.9rem;
+  color: color-mix(in hsl, var(--foreground), transparent 45%);
+}
+
+.formMessage {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--error);
+}
+
+.error {
+  color: var(--error);
+}

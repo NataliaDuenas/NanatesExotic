@@ -1,0 +1,48 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 4px 10px;
+  border-radius: 999px;
+
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+
+  border: 1px solid transparent;
+}
+
+.primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.secondary {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+.outline {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--foreground);
+}
+
+.success {
+  background: color-mix(in hsl, var(--success), transparent 85%);
+  border-color: color-mix(in hsl, var(--success), transparent 60%);
+  color: var(--success);
+}
+
+.warning {
+  background: color-mix(in hsl, var(--warning), transparent 85%);
+  border-color: color-mix(in hsl, var(--warning), transparent 60%);
+  color: var(--warning);
+}
+
+.destructive {
+  background: color-mix(in hsl, var(--error), transparent 85%);
+  border-color: color-mix(in hsl, var(--error), transparent 60%);
+  color: var(--error);
+}

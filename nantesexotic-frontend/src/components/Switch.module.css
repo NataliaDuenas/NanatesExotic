@@ -1,0 +1,35 @@
+.root {
+  width: 42px;
+  height: 24px;
+
+  background: var(--border);
+  border-radius: 999px;
+
+  position: relative;
+
+  cursor: pointer;
+
+  transition: background var(--animation-duration-fast);
+}
+
+.root[data-state="checked"] {
+  background: var(--primary);
+}
+
+.thumb {
+  width: 20px;
+  height: 20px;
+
+  background: white;
+  border-radius: 50%;
+
+  position: absolute;
+  top: 2px;
+  left: 2px;
+
+  transition: transform var(--animation-duration-fast);
+}
+
+.root[data-state="checked"] .thumb {
+  transform: translateX(18px);
+}

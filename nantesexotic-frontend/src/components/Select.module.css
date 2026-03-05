@@ -1,0 +1,114 @@
+.selectTrigger {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-3);
+
+  padding: 10px 12px;
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+
+  background: var(--surface);
+  color: var(--surface-foreground);
+
+  font-family: var(--font-family-base);
+  font-size: 0.95rem;
+
+  cursor: pointer;
+  transition: border var(--animation-duration-fast),
+              box-shadow var(--animation-duration-fast);
+}
+
+.selectTrigger:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: var(--shadow-focus);
+}
+
+.selectIcon {
+  opacity: 0.8;
+}
+
+.selectContent {
+  z-index: var(--z-overlay);
+  background: var(--popup);
+  color: var(--popup-foreground);
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.selectViewport {
+  padding: var(--spacing-2);
+  min-width: var(--radix-select-trigger-width);
+  max-height: 280px;
+}
+
+.scrollButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  cursor: pointer;
+  background: var(--popup);
+}
+
+.scrollIcon {
+  opacity: 0.7;
+}
+
+.selectLabel {
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.selectItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-3);
+
+  padding: 10px 10px;
+  border-radius: 10px;
+
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+}
+
+.selectItem:hover {
+  background: color-mix(in hsl, var(--popup), black 6%);
+}
+
+.selectItem[data-highlighted] {
+  background: color-mix(in hsl, var(--popup), black 8%);
+}
+
+.selectItem[data-disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.selectItemIndicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.selectSeparator {
+  height: 1px;
+  background: var(--border);
+  margin: var(--spacing-2) 0;
+}

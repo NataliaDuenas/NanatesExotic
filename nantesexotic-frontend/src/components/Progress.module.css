@@ -1,0 +1,19 @@
+.progress {
+  position: relative;
+  width: 100%;
+  height: 10px;
+
+  border-radius: 999px;
+  overflow: hidden;
+
+  background: color-mix(in hsl, var(--border), transparent 30%);
+}
+
+.indicator {
+  width: 100%;
+  height: 100%;
+
+  background: var(--primary);
+
+  transition: transform var(--animation-duration-normal);
+}

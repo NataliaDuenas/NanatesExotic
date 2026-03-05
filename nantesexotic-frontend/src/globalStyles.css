@@ -1,0 +1,200 @@
+@import url(https://fonts.googleapis.com/css2?family=Domine:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap);
+@import url(https://fonts.googleapis.com/css2?family=Space+Grotesk:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap);
+@import url(https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap);
+:root {
+  /* Overlay layers */
+  --z-overlay: 400;
+
+  --z-spotlight: 1000; /* Tutorial spotlights/guided help */
+
+  /* System layers */
+  --z-critical: 2000; /* Critical system notifications */
+
+  /* spacing */
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-7: 1.75rem;
+  --spacing-8: 2rem;
+  --spacing-9: 2.25rem;
+  --spacing-10: 2.5rem;
+  --spacing-11: 2.75rem;
+  --spacing-12: 3rem;
+  --spacing-13: 3.25rem;
+  --spacing-14: 3.5rem;
+  --spacing-15: 3.75rem;
+  --spacing-16: 4rem;
+  --spacing-17: 4.25rem;
+  --spacing-18: 4.5rem;
+  --spacing-19: 4.75rem;
+  --spacing-20: 5rem;
+  /* Note: spacing vars only up to 20 */
+}
+
+:root {
+  /* Light Mode (Default - "Paper & Earth") */
+  
+  /* Background: A very light, warm grey/beige, like recycled paper or limestone */
+  --background: hsl(40 20% 96%); 
+  /* Foreground: Deep, almost black green for text, softer than pure black */
+  --foreground: hsl(150 40% 10%);
+
+  /* Surface: Pure white for cards to stand out against the beige background */
+  --surface: hsl(0 0% 100%);
+  --surface-foreground: hsl(150 40% 10%);
+
+  /* Sidebar: A distinct dark section for navigation, grounding the app */
+  --sidebar: hsl(150 30% 15%);
+  --sidebar-foreground: hsl(40 20% 90%);
+
+  /* Cards: White with a subtle border */
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(150 40% 10%);
+
+  /* Popups/Modals */
+  --popup: hsl(0 0% 100%);
+  --popup-foreground: hsl(150 40% 10%);
+
+  /* Primary: A rich, deep "Nantes" Green. Professional and vegetative. */
+  --primary: hsl(145 65% 25%);
+  --primary-foreground: hsl(0 0% 100%);
+
+  /* Secondary: A warm, earthy terracotta/clay for accents and secondary actions */
+  --secondary: hsl(25 40% 50%);
+  --secondary-foreground: hsl(0 0% 100%);
+
+  /* Accent: A bright, technical lime green for data highlights or active states */
+  --accent: hsl(85 60% 45%);
+  --accent-foreground: hsl(0 0% 100%);
+
+  /* Muted: Grey-green for secondary text and inactive elements */
+  --muted: hsl(100 10% 90%);
+  --muted-foreground: hsl(100 10% 40%);
+
+  /* Status Colors */
+  --success: hsl(140 50% 45%);
+  --success-foreground: hsl(0 0% 100%);
+  --error: hsl(0 60% 45%);
+  --error-foreground: hsl(0 0% 100%);
+  --warning: hsl(35 80% 50%);
+  --warning-foreground: hsl(0 0% 100%);
+  --info: hsl(200 60% 40%);
+  --info-foreground: hsl(0 0% 100%);
+  --info-hover: hsl(200 60% 30%);
+  --info-active: hsl(200 60% 20%);
+
+  /* Borders: Crisp, thin lines */
+  --border: hsl(100 10% 85%);
+
+  /* Font Families */
+  /* Headings: 'Domine' - A serif that is readable on screen, feels academic/botanical */
+  --font-family-heading: 'Domine', serif;
+  /* Body: 'Space Grotesk' - A geometric sans that feels technical and data-driven */
+  --font-family-base: 'Space Grotesk', sans-serif;
+  --font-family-monospace: 'JetBrains Mono', monospace;
+  --font-family-cursive: 'Domine', serif; /* Fallback for stylistic choices */
+
+  /* Shadows: Very subtle, mostly for "lift" */
+  --shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-focus: 0 0 0 2px hsl(145 65% 25% / 0.2);
+
+  /* Radius: Technical and tight */
+  --radius-sm: 2px;
+  --radius: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-full: 9999px;
+
+  /* Animation */
+  --animation-duration-fast: 150ms;
+  --animation-duration-normal: 300ms;
+  --animation-duration-slow: 500ms;
+
+  /* Chart Colors: Earthy but distinct for data viz */
+  --chart-color-1: hsl(145 65% 25%); /* Primary Green */
+  --chart-color-2: hsl(25 40% 50%);  /* Clay */
+  --chart-color-3: hsl(85 60% 45%);  /* Lime/Shoot */
+  --chart-color-4: hsl(45 80% 60%);  /* Sun/Wheat */
+  --chart-color-5: hsl(200 40% 50%); /* Water/Sky */
+}
+
+.dark {
+  /* Dark Mode ("Night Soil") */
+  
+  /* Background: Very dark, rich loam color (almost black green) */
+  --background: hsl(150 30% 8%);
+  /* Foreground: Off-white, slightly warm */
+  --foreground: hsl(40 20% 90%);
+
+  /* Surface: Slightly lighter than background, like wet slate */
+  --surface: hsl(150 25% 12%);
+  --surface-foreground: hsl(40 20% 90%);
+
+  /* Sidebar: Even darker, receding */
+  --sidebar: hsl(150 30% 5%);
+  --sidebar-foreground: hsl(40 20% 80%);
+
+  /* Card: Elevated surface */
+  --card: hsl(150 25% 14%);
+  --card-foreground: hsl(40 20% 90%);
+
+  /* Popup */
+  --popup: hsl(150 25% 16%);
+  --popup-foreground: hsl(40 20% 90%);
+
+  /* Primary: Lighter green to glow against dark bg */
+  --primary: hsl(145 50% 45%);
+  --primary-foreground: hsl(0 0% 100%);
+
+  /* Secondary: Muted terracotta */
+  --secondary: hsl(25 40% 45%);
+  --secondary-foreground: hsl(0 0% 100%);
+
+  /* Accent: Vibrant lime */
+  --accent: hsl(85 50% 40%);
+  --accent-foreground: hsl(0 0% 100%);
+
+  /* Muted */
+  --muted: hsl(150 20% 20%);
+  --muted-foreground: hsl(150 10% 60%);
+
+  /* Borders: Subtle separation */
+  --border: hsl(150 20% 20%);
+  
+  /* Chart adjustments for dark mode contrast */
+  --chart-color-1: hsl(145 50% 50%);
+  --chart-color-2: hsl(25 50% 60%);
+  --chart-color-3: hsl(85 50% 50%);
+  --chart-color-4: hsl(45 70% 60%);
+  --chart-color-5: hsl(200 50% 60%);
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-family-base);
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-family-heading);
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body.dark {
+  background: var(--background);
+  color: var(--foreground);
+}

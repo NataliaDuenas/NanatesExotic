@@ -1,0 +1,77 @@
+.toaster {
+  font-family: var(--font-family-base);
+}
+
+/* toast container */
+
+.toast {
+  background: var(--surface);
+  color: var(--surface-foreground);
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+
+  padding: 14px 16px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  box-shadow: var(--shadow-md);
+
+  animation: toastIn var(--animation-duration-fast);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.title {
+  font-weight: 600;
+}
+
+.description {
+  font-size: 0.9rem;
+  opacity: 0.75;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+}
+
+.actionButton {
+  background: var(--primary);
+  color: var(--primary-foreground);
+
+  border: none;
+  border-radius: var(--radius-sm);
+
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.cancelButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

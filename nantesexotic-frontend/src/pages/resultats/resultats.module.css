@@ -1,0 +1,165 @@
+.container {
+  max-width: 1050px;
+  margin: 0 auto;
+  padding: var(--spacing-12) var(--spacing-4);
+  display: grid;
+  gap: var(--spacing-8);
+}
+
+.backLinkWrapper {
+  margin-bottom: var(--spacing-2);
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.header {
+  display: grid;
+  gap: var(--spacing-3);
+}
+
+.title {
+  font-family: var(--font-family-heading);
+  font-size: 2rem;
+  margin: 0;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted-foreground);
+  max-width: 80ch;
+}
+
+.conditionsCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-8);
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: var(--spacing-6);
+}
+
+.conditionsTitle {
+  font-family: var(--font-family-heading);
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.conditionsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-4);
+}
+
+.conditionItem {
+  display: flex;
+  gap: var(--spacing-3);
+  align-items: center;
+  padding: var(--spacing-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: color-mix(in hsl, var(--surface), black 2%);
+}
+
+.conditionIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: color-mix(in hsl, var(--primary), transparent 85%);
+  color: var(--primary);
+}
+
+.conditionContent {
+  display: grid;
+  gap: 2px;
+}
+
+.conditionLabel {
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+}
+
+.conditionValue {
+  font-weight: 800;
+}
+
+.resultsSection {
+  display: grid;
+  gap: var(--spacing-4);
+}
+
+.sectionHeading {
+  font-family: var(--font-family-heading);
+  font-size: 1.35rem;
+  margin: 0;
+}
+
+.cardsList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-4);
+}
+
+.commercialSection {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-4);
+}
+
+.commercialCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-8);
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: var(--spacing-3);
+}
+
+.commercialTitle {
+  margin: 0;
+  font-family: var(--font-family-heading);
+  font-size: 1.25rem;
+}
+
+.commercialText {
+  margin: 0;
+  color: var(--muted-foreground);
+}
+
+.marketList {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: var(--spacing-2);
+}
+
+.actionsFooter {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 900px) {
+  .conditionsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .cardsList {
+    grid-template-columns: 1fr;
+  }
+  .commercialSection {
+    grid-template-columns: 1fr;
+  }
+}
