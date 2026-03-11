@@ -4,6 +4,11 @@
   padding: var(--spacing-12) var(--spacing-4);
 }
 
+.mapHint {
+  margin-bottom: var(--spacing-3);
+  color: var(--muted-foreground);
+}
+
 .header {
   margin-bottom: var(--spacing-8);
 }

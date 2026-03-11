@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 import { AppLayout } from "../../components/AppLayout";
 import { useDiagnostic } from "../../helpers/useDiagnostic";
 import styles from "./diagnostic.module.css"
+import { MapPicker } from "../../components/MapPicker";
 
 import {
   Form,
@@ -102,6 +103,23 @@ export default function DiagnosticPage() {
               >
                 <div className={styles.section}>
                   <h2 className={styles.sectionTitle}>Localisation</h2>
+
+                  <p className={styles.locationHint}>
+                    Cliquez sur la carte pour sélectionner l’emplacement de votre exploitation.
+                  </p>
+
+                  <MapPicker
+                    latitude={form.values.latitude}
+                    longitude={form.values.longitude}
+                    onChange={({ latitude, longitude }) =>
+                      form.setValues((prev) => ({
+                        ...prev,
+                        latitude,
+                        longitude,
+                      }))
+                    }
+                  />
+
                   <div className={styles.row}>
                     <FormItem name="latitude" className={styles.col}>
                       <FormLabel>Latitude</FormLabel>
@@ -139,10 +157,6 @@ export default function DiagnosticPage() {
                       <FormMessage />
                     </FormItem>
                   </div>
-
-                  <p className={styles.locationHint}>
-                    Par défaut centré sur Nantes. Utilisez des coordonnées décimales.
-                  </p>
                 </div>
 
                 <div className={styles.section}>
