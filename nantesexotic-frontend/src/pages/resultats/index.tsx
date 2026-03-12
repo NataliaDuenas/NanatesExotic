@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation, Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
-import { ArrowLeft, Thermometer, CloudRain, FlaskConical } from "lucide-react";
+import { ArrowLeft, Thermometer, CloudRain, FlaskConical, Map} from "lucide-react";
 
 import type { DiagnosticOutput } from "../../types/diagnostic";
 import { AppLayout } from "../../components/AppLayout";
@@ -17,7 +17,7 @@ export default function ResultatsPage() {
     return <Navigate to="/diagnostic" replace />;
   }
 
-  const { results, conditionsExploitation } = state.results;
+  const { results, conditionsExploitation, soil } = state.results;
 
   return (
     <AppLayout>
@@ -92,6 +92,83 @@ export default function ResultatsPage() {
                 <span className={styles.conditionValue}>
                   {conditionsExploitation.phSol.toFixed(1)}
                 </span>
+              </div>
+            </div>
+          </div>
+          <div className={styles.conditionsCard}>
+            <h2 className={styles.conditionsTitle}>Caractéristiques du sol</h2>
+
+            <div className={styles.conditionsGrid}>
+              <div className={styles.conditionItem}>
+                <div className={styles.conditionIcon}>
+                  <FlaskConical />
+                </div>
+                <div className={styles.conditionContent}>
+                  <span className={styles.conditionLabel}>pH du sol</span>
+                  <span className={styles.conditionValue}>
+                    {soil?.phSol != null ? soil.phSol.toFixed(1) : "N/A"}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.conditionItem}>
+                <div className={styles.conditionIcon}>
+                  <Map />
+                </div>
+                <div className={styles.conditionContent}>
+                  <span className={styles.conditionLabel}>Sable</span>
+                  <span className={styles.conditionValue}>
+                    {soil?.sandPct != null ? `${soil.sandPct.toFixed(0)}%` : "N/A"}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.conditionItem}>
+                <div className={styles.conditionIcon}>
+                  <Map />
+                </div>
+                <div className={styles.conditionContent}>
+                  <span className={styles.conditionLabel}>Argile</span>
+                  <span className={styles.conditionValue}>
+                    {soil?.clayPct != null ? `${soil.clayPct.toFixed(0)}%` : "N/A"}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.conditionItem}>
+                <div className={styles.conditionIcon}>
+                  <Map />
+                </div>
+                <div className={styles.conditionContent}>
+                  <span className={styles.conditionLabel}>Limon</span>
+                  <span className={styles.conditionValue}>
+                    {soil?.siltPct != null ? `${soil.siltPct.toFixed(0)}%` : "N/A"}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.conditionItem}>
+                <div className={styles.conditionIcon}>
+                  <FlaskConical />
+                </div>
+                <div className={styles.conditionContent}>
+                  <span className={styles.conditionLabel}>Carbone organique</span>
+                  <span className={styles.conditionValue}>
+                    {soil?.socPct != null ? `${soil.socPct.toFixed(1)}%` : "N/A"}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.conditionItem}>
+                <div className={styles.conditionIcon}>
+                  <Map />
+                </div>
+                <div className={styles.conditionContent}>
+                  <span className={styles.conditionLabel}>Texture dominante</span>
+                  <span className={styles.conditionValue}>
+                    {soil?.textureLabel ?? "N/A"}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

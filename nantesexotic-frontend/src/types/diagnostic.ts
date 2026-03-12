@@ -5,11 +5,8 @@ export type CropResult = {
   id: string;
   name: string;
   scientificName?: string;
-
-  // ✅ lo nuevo
   imageUrl?: string;
 
-  // scoring
   scoreTotal: number;
   scoreClimat: number;
   scoreSol: number;
@@ -17,7 +14,6 @@ export type CropResult = {
   scoreInfrastructure: number;
   scoreDemande: number;
 
-  // advice / text
   niveauRisque: NiveauRisque;
   modeConseille: ModeConseille;
   justification: string;
@@ -32,6 +28,14 @@ export type DiagnosticOutput = {
     tempMinHivernale: number;
     precipitationsAnnuelles: number;
     phSol: number;
+  };
+  soil: {
+    phSol: number | null;
+    socPct: number | null;
+    sandPct: number | null;
+    siltPct: number | null;
+    clayPct: number | null;
+    textureLabel?: string | null;
   };
   results: CropResult[];
 };

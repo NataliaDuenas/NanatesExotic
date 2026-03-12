@@ -3,6 +3,34 @@ import { CROP_CATALOG } from "../catalog/crops.js";
 
 const router = express.Router();
 
+function avg(arr) {
+  return arr.reduce((a, b) => a + b, 0) / arr.length;
+}
+
+function clamp(x, min, max) {
+  return Math.max(min, Math.min(max, x));
+}
+
+function scoreRange(value, idealMin, idealMax, tolMin, tolMax, maxPoints) {
+  if (value == null) return 0;
+
+  if (value >= idealMin && value <= idealMax) return maxPoints;
+
+  if (value < idealMin) {
+    if (value <= tolMin) return 0;
+    const ratio = (value - tolMin) / (idealMin - tolMin);
+    return Math.max(0, Math.round(ratio * maxPoints));
+  }
+
+  if (value > idealMax) {
+    if (value >= tolMax) return 0;
+    const ratio = (tolMax - value) / (tolMax - idealMax);
+    return Math.max(0, Math.round(ratio * maxPoints));
+  }
+
+  return 0;
+}
+
 async function fetchClimateSummary(latitude, longitude) {
   const today = new Date();
   const endDate = today.toISOString().slice(0, 10);
@@ -35,16 +63,14 @@ async function fetchClimateSummary(latitude, longitude) {
     throw new Error("Open-Meteo returned incomplete climate data");
   }
 
-  const avg = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
-
   const tempMoyenne = avg(tMean);
 
+  // Approximation simple du froid hivernal : percentile 5 des Tmin journalières
   const sortedMin = [...tMin].sort((a, b) => a - b);
   const tempMinHivernale =
     sortedMin[Math.floor(0.05 * (sortedMin.length - 1))];
 
-  const precipitationsAnnuelles =
-    precip.reduce((a, b) => a + b, 0) / 5;
+  const precipitationsAnnuelles = precip.reduce((a, b) => a + b, 0) / 5;
 
   return {
     tempMoyenne,
@@ -53,9 +79,52 @@ async function fetchClimateSummary(latitude, longitude) {
   };
 }
 
+async function fetchSoilSummary(latitude, longitude) {
+  const url =
+    `https://rest.isric.org/soilgrids/v2.0/properties/query` +
+    `?lat=${latitude}` +
+    `&lon=${longitude}` +
+    `&property=phh2o` +
+    `&property=soc` +
+    `&property=sand` +
+    `&property=silt` +
+    `&property=clay` +
+    `&depth=0-5cm` +
+    `&value=mean`;
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`SoilGrids error: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  const getMean = (name) => {
+    const layer = data?.properties?.layers?.find((l) => l.name === name);
+    const depth = layer?.depths?.find((d) => d.label === "0-5cm");
+    return depth?.values?.mean ?? null;
+  };
+
+  const ph = getMean("phh2o");
+  const soc = getMean("soc");
+  const sand = getMean("sand");
+  const silt = getMean("silt");
+  const clay = getMean("clay");
+
+  return {
+    // Approximation pratique pour MVP
+    phSol: ph != null ? ph / 10 : null,
+    socPct: soc != null ? soc / 10 : null,
+    sandPct: sand != null ? sand / 10 : null,
+    siltPct: silt != null ? silt / 10 : null,
+    clayPct: clay != null ? clay / 10 : null,
+  };
+}
+
 function buildJustification({
   crop,
   conditionsExploitation,
+  soil,
   scoreClimat,
   scoreSol,
   scoreSurface,
@@ -80,8 +149,10 @@ function buildJustification({
     );
   }
 
-  if (conditionsExploitation.tempMoyenne >= crop.climate.tmean.ideal[0] &&
-      conditionsExploitation.tempMoyenne <= crop.climate.tmean.ideal[1]) {
+  if (
+    conditionsExploitation.tempMoyenne >= crop.climate.tmean.ideal[0] &&
+    conditionsExploitation.tempMoyenne <= crop.climate.tmean.ideal[1]
+  ) {
     reasons.push(
       `la température moyenne (${conditionsExploitation.tempMoyenne.toFixed(1)}°C) se situe dans la plage favorable`
     );
@@ -91,10 +162,11 @@ function buildJustification({
     );
   }
 
-  if (conditionsExploitation.tempMinHivernale >= crop.climate.winterMin.ideal[0]) {
-    reasons.push(
-      `le risque de froid hivernal reste acceptable`
-    );
+  if (
+    conditionsExploitation.tempMinHivernale >=
+    crop.climate.winterMin.ideal[0]
+  ) {
+    reasons.push(`le risque de froid hivernal reste acceptable`);
   } else {
     reasons.push(
       `le froid hivernal (${conditionsExploitation.tempMinHivernale.toFixed(1)}°C) impose une protection`
@@ -107,6 +179,24 @@ function buildJustification({
     reasons.push(`le sol est exploitable mais pas idéal`);
   } else {
     reasons.push(`le sol constitue un facteur limitant`);
+  }
+
+  if (soil.phSol != null) {
+    reasons.push(
+      `le pH du sol (${soil.phSol.toFixed(1)}) a été estimé via SoilGrids`
+    );
+  }
+
+  if (soil.sandPct != null) {
+    reasons.push(
+      `la texture présente environ ${soil.sandPct.toFixed(0)}% de sable`
+    );
+  }
+
+  if (soil.socPct != null) {
+    reasons.push(
+      `la teneur en carbone organique estimée est de ${soil.socPct.toFixed(1)}%`
+    );
   }
 
   if (typeof surfaceHa === "number" && surfaceHa >= crop.surfaceMinHa) {
@@ -127,6 +217,10 @@ function buildJustification({
     }
   }
 
+  if (scoreInfrastructure <= 3) {
+    reasons.push(`les contraintes d’infrastructure réduisent fortement la faisabilité`);
+  }
+
   if (scoreDemande >= 12) {
     reasons.push(`le potentiel commercial est élevé sur le marché européen`);
   } else if (scoreDemande >= 8) {
@@ -136,6 +230,25 @@ function buildJustification({
   }
 
   return reasons.join(". ") + ".";
+}
+
+function inferTextureLabel(soil) {
+  const sand = soil?.sandPct;
+  const silt = soil?.siltPct;
+  const clay = soil?.clayPct;
+
+  if (sand == null || silt == null || clay == null) {
+    return null;
+  }
+
+  if (sand >= 70 && clay < 15) return "sableuse";
+  if (sand >= 55 && silt >= 20 && clay < 20) return "sablo-limoneuse";
+  if (silt >= 50 && clay < 20) return "limoneuse";
+  if (clay >= 35) return "argileuse";
+  if (clay >= 20 && sand >= 35) return "sablo-argileuse";
+  if (clay >= 20 && silt >= 35) return "limono-argileuse";
+
+  return "équilibrée";
 }
 
 router.post("/analyze", async (req, res) => {
@@ -155,76 +268,109 @@ router.post("/analyze", async (req, res) => {
     }
 
     const climate = await fetchClimateSummary(latitude, longitude);
+    const soil = await fetchSoilSummary(latitude, longitude);
+    const textureLabel = inferTextureLabel(soil);
 
     const conditionsExploitation = {
       tempMoyenne: climate.tempMoyenne,
       tempMinHivernale: climate.tempMinHivernale,
       precipitationsAnnuelles: climate.precipitationsAnnuelles,
-      phSol: 6.5, // placeholder, luego SoilGrids
+      phSol: soil.phSol ?? 6.5,
     };
 
     const results = CROP_CATALOG.map((c) => {
       let infraPenalty = 0;
-      if (c.infra?.needsSerre && !hasSerre) infraPenalty += 10;
-      if (c.infra?.needsIrrigation && irrigationType === "aucune") infraPenalty += 5;
+      if (c.infra?.needsSerre && !hasSerre) infraPenalty += 6;
+      if (c.infra?.needsIrrigation && irrigationType === "aucune") {
+        infraPenalty += 4;
+      }
 
       let scoreSurface = 10;
       if (typeof surfaceHa === "number" && surfaceHa < c.surfaceMinHa) {
-        scoreSurface = Math.max(0, Math.round((surfaceHa / c.surfaceMinHa) * 10));
+        scoreSurface = Math.max(
+          0,
+          Math.round((surfaceHa / c.surfaceMinHa) * 10)
+        );
       }
 
-      function scoreRange(value, idealMin, idealMax, tolMin, tolMax, maxPoints) {
-        if (value >= idealMin && value <= idealMax) return maxPoints;
-
-        if (value < idealMin) {
-          if (value <= tolMin) return 0;
-          const ratio = (value - tolMin) / (idealMin - tolMin);
-          return Math.max(0, Math.round(ratio * maxPoints));
-        }
-
-        if (value > idealMax) {
-          if (value >= tolMax) return 0;
-          const ratio = (tolMax - value) / (tolMax - idealMax);
-          return Math.max(0, Math.round(ratio * maxPoints));
-        }
-
-        return 0;
-      }
-      const scoreSol = 16; // /25 placeholder
-      const scoreInfrastructure = Math.max(0, 10 - infraPenalty); // /10
-      const scoreDemande = c.demandScore15 ?? 10; // /15
-
+      // Climat /40
       const sTemp = scoreRange(
-      conditionsExploitation.tempMoyenne,
-      c.climate.tmean.ideal[0],
-      c.climate.tmean.ideal[1],
-      c.climate.tmean.tol[0],
-      c.climate.tmean.tol[1],
-      18
-    );
+        conditionsExploitation.tempMoyenne,
+        c.climate.tmean.ideal[0],
+        c.climate.tmean.ideal[1],
+        c.climate.tmean.tol[0],
+        c.climate.tmean.tol[1],
+        18
+      );
 
-    const sWinter = scoreRange(
-      conditionsExploitation.tempMinHivernale,
-      c.climate.winterMin.ideal[0],
-      c.climate.winterMin.ideal[1],
-      c.climate.winterMin.tol[0],
-      c.climate.winterMin.tol[1],
-      14
-    );
+      const sWinter = scoreRange(
+        conditionsExploitation.tempMinHivernale,
+        c.climate.winterMin.ideal[0],
+        c.climate.winterMin.ideal[1],
+        c.climate.winterMin.tol[0],
+        c.climate.winterMin.tol[1],
+        14
+      );
 
-    const sPrecip = scoreRange(
-      conditionsExploitation.precipitationsAnnuelles,
-      c.climate.precip.ideal[0],
-      c.climate.precip.ideal[1],
-      c.climate.precip.tol[0],
-      c.climate.precip.tol[1],
-      8
-    );
+      const sPrecip = scoreRange(
+        conditionsExploitation.precipitationsAnnuelles,
+        c.climate.precip.ideal[0],
+        c.climate.precip.ideal[1],
+        c.climate.precip.tol[0],
+        c.climate.precip.tol[1],
+        8
+      );
 
-    const scoreClimat = sTemp + sWinter + sPrecip; // /40
+      const scoreClimat = sTemp + sWinter + sPrecip;
+
+      // Sol /25
+      const sPh = scoreRange(
+        soil.phSol,
+        c.soil.ph.ideal[0],
+        c.soil.ph.ideal[1],
+        c.soil.ph.tol[0],
+        c.soil.ph.tol[1],
+        12
+      );
+
+      const sSand = scoreRange(
+        soil.sandPct,
+        c.soil.sandPct.ideal[0],
+        c.soil.sandPct.ideal[1],
+        c.soil.sandPct.tol[0],
+        c.soil.sandPct.tol[1],
+        8
+      );
+
+      const sSoc = scoreRange(
+        soil.socPct,
+        c.soil.socPct.ideal[0],
+        c.soil.socPct.ideal[1],
+        c.soil.socPct.tol[0],
+        c.soil.socPct.tol[1],
+        5
+      );
+
+      const scoreSol = sPh + sSand + sSoc;
+
+      // Infrastructure /10
+      const scoreInfrastructure = Math.max(0, 10 - infraPenalty);
+
+      // Demande /15
+      let scoreDemande = c.demandScore15 ?? 10;
+      if (objectifProduction === "transformation") {
+        scoreDemande = clamp(scoreDemande + 1, 0, 15);
+      }
+      if (objectifProduction === "test_pilote") {
+        scoreDemande = clamp(scoreDemande - 1, 0, 15);
+      }
 
       const scoreTotal =
-        scoreClimat + scoreSol + scoreSurface + scoreInfrastructure + scoreDemande;
+        scoreClimat +
+        scoreSol +
+        scoreSurface +
+        scoreInfrastructure +
+        scoreDemande;
 
       const niveauRisque =
         scoreTotal >= 70 ? "faible" : scoreTotal >= 50 ? "moyen" : "eleve";
@@ -238,6 +384,7 @@ router.post("/analyze", async (req, res) => {
       const justification = buildJustification({
         crop: c,
         conditionsExploitation,
+        soil,
         scoreClimat,
         scoreSol,
         scoreSurface,
@@ -274,6 +421,10 @@ router.post("/analyze", async (req, res) => {
     return res.json({
       conditionsExploitation,
       results,
+      soil: {
+          ...soil,
+          textureLabel,
+        },
       meta: {
         latitude,
         longitude,
