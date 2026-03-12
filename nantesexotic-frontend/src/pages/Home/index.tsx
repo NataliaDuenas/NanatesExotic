@@ -16,22 +16,10 @@ import {
 } from "lucide-react";
 import styles from "./_index.module.css";
 
+const BACKEND_URL = import.meta.env.VITE_API_URL ?? "";
+
 export default function LandingPage() {
   const { data: cropsData, isLoading } = useCrops();
-
-    console.log("crops count:", cropsData?.crops?.length, cropsData?.crops);
-
-  // ✅ Tus imágenes están en: public/crops/*.jpg
-  // ✅ Map por ID (según tu catálogo)
-  const cropImageById: Record<string, string> = {
-    "1": "/crops/bananier.jpg",
-    "2": "/crops/goyavier.jpg",
-    "3": "/crops/passion.jpg",
-    "4": "/crops/papayer.jpg",
-    "5": "/crops/acerolier.jpg",
-    "6": "/crops/corossolier.jpg",
-    "7": "/crops/manguier.jpg",
-  };
 
   return (
     <AppLayout>
@@ -142,12 +130,12 @@ export default function LandingPage() {
                     <img
                       src={
                         crop.imageUrl
-                          ? `http://localhost:4000${crop.imageUrl}`
-                          : "http://localhost:4000/crops/placeholder.jpg"
+                          ? `${BACKEND_URL}${crop.imageUrl}`
+                          : `${BACKEND_URL}/crops/placeholder.jpg`
                       }
                       alt={crop.name}
                       onError={(e) => {
-                        e.currentTarget.src = "http://localhost:4000/crops/placeholder.jpg";
+                        e.currentTarget.src = `${BACKEND_URL}/crops/placeholder.jpg`;
                       }}
                     />
                     <span className={styles.cropName}>{crop.name}</span>
