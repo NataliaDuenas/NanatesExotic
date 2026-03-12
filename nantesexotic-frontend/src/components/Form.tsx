@@ -1,11 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, { useRef, useEffect } from "react";
-import type { Dispatch, SetStateAction } from "react";
+import {
+  useRef,
+  useEffect,
+  createContext,
+  useContext,
+  useId,
+  useState,
+  useCallback,
+  forwardRef,
+} from "react";
+import type {
+  Dispatch,
+  SetStateAction,
+  ReactNode,
+} from "react";
+import React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { z, ZodError, ZodIssueCode } from "zod";
-import type { ZodIssue } from "zod";
 import styles from "./Form.module.css";
+
 /**
  * Core function for setting up form with types.
  * Note: do not pass a generic type argument, instead have it inferred from the schema value
@@ -28,13 +42,11 @@ export function useForm<T extends z.ZodType<any, any>>({
     onSubmit: (data: z.infer<T>) => void,
   ) => (e: React.FormEvent) => void;
 } {
-  const [values, setValues] = React.useState<Record<string, any>>(
-    defaultValues as Record<string, any>,
-  );
-  const [errors, setErrors] = React.useState<FormErrors>({});
+  const [values, setValues] = useState<z.infer<T>>(defaultValues as z.infer<T>);
+  const [errors, setErrors] = useState<FormErrors>({});
 
   // Manually set an error for a specific field
-  const setFieldError = React.useCallback(
+  const setFieldError = useCallback(
     (path: string, errorMessage: string) => {
       setErrors((prev) => {
         return setValueByPath(prev, path, errorMessage);
@@ -44,12 +56,12 @@ export function useForm<T extends z.ZodType<any, any>>({
   );
 
   // Check if an issue is an "extra property" error from strict validation
-  const isExtraPropertyError = (issue: ZodIssue): boolean => {
+  const isExtraPropertyError = (issue: z.ZodIssue): boolean => {
     return issue.code === ZodIssueCode.unrecognized_keys;
   };
 
   // full form validation
-  const validateForm = React.useCallback((): boolean => {
+  const validateForm = useCallback((): boolean => {
     if (!schema) return true;
     try {
       // Make the schema strict to detect issues of not including all fields in the schema
@@ -59,23 +71,23 @@ export function useForm<T extends z.ZodType<any, any>>({
     } catch (err) {
       if (err instanceof ZodError) {
         // Separate extra property errors from regular validation errors
-        const extraPropertyErrors = err.errors.filter(isExtraPropertyError);
-        const validationErrors = err.errors.filter(
-          (issue) => !isExtraPropertyError(issue),
+        const extraPropertyErrors = err.issues.filter(isExtraPropertyError);
+        const validationErrors = err.issues.filter(
+          (issue: z.ZodIssue) => !isExtraPropertyError(issue),
         );
 
         // Extra property errors should be thrown
         if (extraPropertyErrors.length > 0) {
           throw new Error(
             "Extra properties detected in form values:" +
-              extraPropertyErrors.map((e) => e.message).join(", ") +
+              extraPropertyErrors.map((e: z.ZodIssue) => e.message).join(", ") +
               ". Either update the schema or remove these values",
           );
         }
 
         // Only add regular validation errors to the form state
         const tree: any = {};
-        validationErrors.forEach((issue: ZodIssue) => {
+        validationErrors.forEach((issue: z.ZodIssue) => {
           const path = issue.path.join(".");
           // Ensure error message is a string
           const errorMessage =
@@ -94,7 +106,7 @@ export function useForm<T extends z.ZodType<any, any>>({
         if (validationErrors.length === 0 && extraPropertyErrors.length > 0) {
           throw new Error(
             `Form contains extra properties: ${extraPropertyErrors
-              .map((e) => e.message)
+              .map((e: z.ZodIssue) => e.message)
               .join(", ")}`,
           );
         }
@@ -105,39 +117,30 @@ export function useForm<T extends z.ZodType<any, any>>({
   }, [schema, values]);
 
   // single-field (path) validation
-  // You don't usually need to call this because validation happens automatically.
-  const validateField = React.useCallback(
+  const validateField = useCallback(
     (path: string, options?: { shallow?: boolean }) => {
       if (!schema) return;
       const result = schema.safeParse(values);
       setErrors((prev: FormErrors) => {
         let next = { ...prev };
 
-        // For shallow validation, only clear the exact path error
-        // For regular validation, clear all errors at/under this path
         if (options?.shallow) {
-          // Only delete the specific error at this path, preserving children
           if (getValueByPath(next, path) !== undefined) {
             next = deleteValueByPath(next, path, { shallow: true });
           }
         } else {
-          // Clear all errors at/under this path
           next = deleteValueByPath(next, path);
         }
 
         if (!result.success) {
-          // put back just the validation issues for this segment
-          result.error.errors.forEach((issue) => {
+          result.error.issues.forEach((issue: z.ZodIssue) => {
             const ip = issue.path.join(".");
 
-            // For shallow validation, only include errors for the exact path
-            // For regular validation, include errors for the path and its children
             const shouldIncludeError = options?.shallow
               ? ip === path
               : ip === path || ip.startsWith(path + ".");
 
             if (shouldIncludeError) {
-              // Ensure error message is a string
               const errorMessage =
                 typeof issue.message === "string"
                   ? issue.message
@@ -154,7 +157,7 @@ export function useForm<T extends z.ZodType<any, any>>({
 
   // submit handler
   type Data = z.infer<T>;
-  const handleSubmit = React.useCallback(
+  const handleSubmit = useCallback(
     (onSubmit: (data: Data) => void) => {
       return (e: React.FormEvent) => {
         e.preventDefault();
@@ -181,7 +184,6 @@ export function useForm<T extends z.ZodType<any, any>>({
     }
     oldValueRef.current = values;
     for (const k of diffKeys) {
-      // Use shallow validation for array length changes
       validateField(k, { shallow: true });
     }
   }, [values, validateField]);
@@ -232,13 +234,13 @@ export function Form<T>(
 }
 
 /**
- * A wrapper around each form field. The name for nested field should be dot separated.
+ * A wrapper around each form field.
  */
-export const FormItem = React.forwardRef<
+export const FormItem = forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & { name: string }
 >(({ name, className, ...props }, ref) => {
-  const id = React.useId();
+  const id = useId();
   return (
     <FormItemContext.Provider value={{ id, name }}>
       <div
@@ -254,7 +256,7 @@ FormItem.displayName = "FormItem";
 /**
  * A label for a form field. Should be inside FormItem.
  */
-export const FormLabel = React.forwardRef<
+export const FormLabel = forwardRef<
   HTMLLabelElement,
   React.LabelHTMLAttributes<HTMLLabelElement>
 >(({ className, ...props }, ref) => {
@@ -271,9 +273,9 @@ export const FormLabel = React.forwardRef<
 FormLabel.displayName = "FormLabel";
 
 /**
- * Wraps around a form control to provide better accessibility. Should be inside FormItem.
+ * Wraps around a form control to provide better accessibility.
  */
-export const FormControl = React.forwardRef<
+export const FormControl = forwardRef<
   any,
   React.ComponentPropsWithoutRef<typeof Slot>
 >(({ className, ...props }, ref) => {
@@ -293,9 +295,9 @@ export const FormControl = React.forwardRef<
 FormControl.displayName = "FormControl";
 
 /**
- * Provides form description with accessibility and styling. Should be inside FormItem.
+ * Provides form description with accessibility and styling.
  */
-export const FormDescription = React.forwardRef<
+export const FormDescription = forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => {
@@ -312,9 +314,9 @@ export const FormDescription = React.forwardRef<
 FormDescription.displayName = "FormDescription";
 
 /**
- * Provides form error message with accessibility and styling. Should be inside FormItem.
+ * Provides form error message with accessibility and styling.
  */
-export const FormMessage = React.forwardRef<
+export const FormMessage = forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, children, ...props }, ref) => {
@@ -334,9 +336,8 @@ export const FormMessage = React.forwardRef<
 });
 FormMessage.displayName = "FormMessage";
 
-// Internal contexts that should not be exposed
+// Internal types
 
-// a nested tree to handle nested forms
 type FormErrors = {
   [key: string]: string | FormErrors;
 };
@@ -350,22 +351,20 @@ type FormContextValue<T> = {
   setFieldError: (path: string, errorMessage: string) => void;
 };
 
-const FormContext = React.createContext<FormContextValue<any> | undefined>(
-  undefined,
-);
+const FormContext = createContext<FormContextValue<any> | undefined>(undefined);
 
 function useFormContext(): FormContextValue<any> {
-  const ctx = React.useContext(FormContext);
+  const ctx = useContext(FormContext);
   if (!ctx) throw new Error("useFormContext must be inside <Form>");
   return ctx;
 }
 
 type FieldCtx = { id: string; name: string };
-const FormItemContext = React.createContext<FieldCtx | null>(null);
+const FormItemContext = createContext<FieldCtx | null>(null);
 
 function useFormField() {
   const form = useFormContext();
-  const ctx = React.useContext(FormItemContext);
+  const ctx = useContext(FormItemContext);
   if (!ctx)
     throw new Error(
       "<FormLabel> and <FormControl> must live inside <FormItem>",
@@ -373,7 +372,6 @@ function useFormField() {
 
   const { id, name } = ctx;
   const errorValue = getValueByPath(form.errors, name);
-  // Ensure error message is a string
   const errorMsg = typeof errorValue === "string" ? errorValue : undefined;
   return {
     id,
@@ -387,7 +385,7 @@ function useFormField() {
   };
 }
 
-// Internal helpers. Should not be used externally since these aren't typed.
+// Internal helpers
 
 function getValueByPath(obj: any, path: string): any {
   const keys = path.split(".");
@@ -422,7 +420,6 @@ function setValueByPath(obj: any, path: string, value: any): any {
     pointer = pointer[key];
   }
 
-  // set final
   if (/^\d+$/.test(lastKey) && Array.isArray(pointer)) {
     pointer[+lastKey] = value;
   } else {
@@ -432,7 +429,6 @@ function setValueByPath(obj: any, path: string, value: any): any {
   return newObj;
 }
 
-// DELETE helper — remove a path (and clean up empty containers)
 function deleteValueByPath(
   obj: any,
   path: string,
@@ -445,38 +441,30 @@ function deleteValueByPath(
 
   for (const key of keys) {
     if (pointer[key] == null) {
-      return obj; // nothing to remove
+      return obj;
     }
     parents.push({ parent: pointer, key });
     pointer = pointer[key];
   }
 
-  // remove the leaf
   if (pointer && typeof pointer === "object" && last in pointer) {
     if (options?.shallow) {
-      // For shallow deletion, just remove the specific error message
-      // but preserve any nested errors
       if (typeof pointer[last] === "string") {
         delete pointer[last];
       } else if (
         typeof pointer[last] === "object" &&
         !Array.isArray(pointer[last])
       ) {
-        // If it's an object but not an array, we need to keep its children
-        // but remove any direct error on this path
         if ("message" in pointer[last]) {
           delete pointer[last].message;
         }
       }
     } else {
-      // For deep deletion, remove the entire path and its children
       delete pointer[last];
     }
   }
 
-  // Only prune empty containers if we're not in shallow mode
   if (!options?.shallow) {
-    // climb back and prune empty objects/arrays
     for (let i = parents.length - 1; i >= 0; i--) {
       const { parent, key } = parents[i];
       const val = parent[key];

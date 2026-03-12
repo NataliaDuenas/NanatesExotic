@@ -1,4 +1,3 @@
-import React from "react";
 import styles from "./ScoreGauge.module.css";
 
 interface ScoreGaugeProps {
@@ -16,7 +15,7 @@ export function ScoreGauge({
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (score / 100) * circumference;
 
-  let color = "var(--error)"; // < 50
+  let color = "var(--error)";
   if (score >= 70) color = "var(--success)";
   else if (score >= 50) color = "var(--warning)";
 
@@ -28,7 +27,6 @@ export function ScoreGauge({
         viewBox={`0 0 ${size} ${size}`}
         className={styles.gauge}
       >
-        {/* Background Circle */}
         <circle
           className={styles.gaugeBackground}
           cx={size / 2}
@@ -36,7 +34,6 @@ export function ScoreGauge({
           r={radius}
           strokeWidth={strokeWidth}
         />
-        {/* Progress Circle */}
         <circle
           className={styles.gaugeProgress}
           cx={size / 2}
@@ -51,7 +48,7 @@ export function ScoreGauge({
       </svg>
       <div className={styles.scoreText}>
         <span className={styles.scoreValue} style={{ color }}>
-          {score}
+          {Math.round(score)}
         </span>
         <span className={styles.scoreLabel}>/100</span>
       </div>

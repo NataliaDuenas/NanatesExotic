@@ -1,4 +1,3 @@
-import React from "react";
 import { Link, useLocation, Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { ArrowLeft, Thermometer, CloudRain, FlaskConical, Map} from "lucide-react";

@@ -21,18 +21,6 @@ export default function LandingPage() {
 
     console.log("crops count:", cropsData?.crops?.length, cropsData?.crops);
 
-  // ✅ Tus imágenes están en: public/crops/*.jpg
-  // ✅ Map por ID (según tu catálogo)
-  const cropImageById: Record<string, string> = {
-    "1": "/crops/bananier.jpg",
-    "2": "/crops/goyavier.jpg",
-    "3": "/crops/passion.jpg",
-    "4": "/crops/papayer.jpg",
-    "5": "/crops/acerolier.jpg",
-    "6": "/crops/corossolier.jpg",
-    "7": "/crops/manguier.jpg",
-  };
-
   return (
     <AppLayout>
       <>
