@@ -3,6 +3,15 @@ import { CROP_CATALOG } from "../catalog/crops.js";
 
 const router = express.Router();
 
+// Valeurs typiques pour le bassin nantais (fallback si SoilGrids indisponible)
+const NANTES_SOIL_FALLBACK = {
+  phSol: 6.2,
+  socPct: 1.8,
+  sandPct: 35,
+  siltPct: 45,
+  clayPct: 20,
+};
+
 function avg(arr) {
   return arr.reduce((a, b) => a + b, 0) / arr.length;
 }
@@ -65,7 +74,6 @@ async function fetchClimateSummary(latitude, longitude) {
 
   const tempMoyenne = avg(tMean);
 
-  // Approximation simple du froid hivernal : percentile 5 des Tmin journalières
   const sortedMin = [...tMin].sort((a, b) => a - b);
   const tempMinHivernale =
     sortedMin[Math.floor(0.05 * (sortedMin.length - 1))];
@@ -92,33 +100,39 @@ async function fetchSoilSummary(latitude, longitude) {
     `&depth=0-5cm` +
     `&value=mean`;
 
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`SoilGrids error: ${response.status}`);
+  try {
+    const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
+    if (!response.ok) {
+      console.warn(`SoilGrids unavailable (${response.status}), using fallback values`);
+      return { ...NANTES_SOIL_FALLBACK, isFallback: true };
+    }
+
+    const data = await response.json();
+
+    const getMean = (name) => {
+      const layer = data?.properties?.layers?.find((l) => l.name === name);
+      const depth = layer?.depths?.find((d) => d.label === "0-5cm");
+      return depth?.values?.mean ?? null;
+    };
+
+    const ph = getMean("phh2o");
+    const soc = getMean("soc");
+    const sand = getMean("sand");
+    const silt = getMean("silt");
+    const clay = getMean("clay");
+
+    return {
+      phSol: ph != null ? ph / 10 : NANTES_SOIL_FALLBACK.phSol,
+      socPct: soc != null ? soc / 10 : NANTES_SOIL_FALLBACK.socPct,
+      sandPct: sand != null ? sand / 10 : NANTES_SOIL_FALLBACK.sandPct,
+      siltPct: silt != null ? silt / 10 : NANTES_SOIL_FALLBACK.siltPct,
+      clayPct: clay != null ? clay / 10 : NANTES_SOIL_FALLBACK.clayPct,
+      isFallback: false,
+    };
+  } catch (err) {
+    console.warn("SoilGrids fetch failed, using fallback values:", err.message);
+    return { ...NANTES_SOIL_FALLBACK, isFallback: true };
   }
-
-  const data = await response.json();
-
-  const getMean = (name) => {
-    const layer = data?.properties?.layers?.find((l) => l.name === name);
-    const depth = layer?.depths?.find((d) => d.label === "0-5cm");
-    return depth?.values?.mean ?? null;
-  };
-
-  const ph = getMean("phh2o");
-  const soc = getMean("soc");
-  const sand = getMean("sand");
-  const silt = getMean("silt");
-  const clay = getMean("clay");
-
-  return {
-    // Approximation pratique pour MVP
-    phSol: ph != null ? ph / 10 : null,
-    socPct: soc != null ? soc / 10 : null,
-    sandPct: sand != null ? sand / 10 : null,
-    siltPct: silt != null ? silt / 10 : null,
-    clayPct: clay != null ? clay / 10 : null,
-  };
 }
 
 function buildJustification({
@@ -158,7 +172,7 @@ function buildJustification({
     );
   } else {
     reasons.push(
-      `la température moyenne (${conditionsExploitation.tempMoyenne.toFixed(1)}°C) s’éloigne de la plage optimale`
+      `la température moyenne (${conditionsExploitation.tempMoyenne.toFixed(1)}°C) s'éloigne de la plage optimale`
     );
   }
 
@@ -181,22 +195,20 @@ function buildJustification({
     reasons.push(`le sol constitue un facteur limitant`);
   }
 
-  if (soil.phSol != null) {
+  if (soil.isFallback) {
     reasons.push(
-      `le pH du sol (${soil.phSol.toFixed(1)}) a été estimé via SoilGrids`
+      `les données pédologiques utilisées sont des valeurs typiques du bassin nantais (service SoilGrids temporairement indisponible)`
     );
-  }
-
-  if (soil.sandPct != null) {
-    reasons.push(
-      `la texture présente environ ${soil.sandPct.toFixed(0)}% de sable`
-    );
-  }
-
-  if (soil.socPct != null) {
-    reasons.push(
-      `la teneur en carbone organique estimée est de ${soil.socPct.toFixed(1)}%`
-    );
+  } else {
+    if (soil.phSol != null) {
+      reasons.push(`le pH du sol (${soil.phSol.toFixed(1)}) a été estimé via SoilGrids`);
+    }
+    if (soil.sandPct != null) {
+      reasons.push(`la texture présente environ ${soil.sandPct.toFixed(0)}% de sable`);
+    }
+    if (soil.socPct != null) {
+      reasons.push(`la teneur en carbone organique estimée est de ${soil.socPct.toFixed(1)}%`);
+    }
   }
 
   if (typeof surfaceHa === "number" && surfaceHa >= crop.surfaceMinHa) {
@@ -211,14 +223,14 @@ function buildJustification({
 
   if (crop.infra?.needsSerre) {
     if (hasSerre) {
-      reasons.push(`la présence d’une serre améliore nettement la faisabilité`);
+      reasons.push(`la présence d'une serre améliore nettement la faisabilité`);
     } else {
       reasons.push(`une serre est recommandée pour sécuriser la production`);
     }
   }
 
   if (scoreInfrastructure <= 3) {
-    reasons.push(`les contraintes d’infrastructure réduisent fortement la faisabilité`);
+    reasons.push(`les contraintes d'infrastructure réduisent fortement la faisabilité`);
   }
 
   if (scoreDemande >= 12) {
@@ -237,9 +249,7 @@ function inferTextureLabel(soil) {
   const silt = soil?.siltPct;
   const clay = soil?.clayPct;
 
-  if (sand == null || silt == null || clay == null) {
-    return null;
-  }
+  if (sand == null || silt == null || clay == null) return null;
 
   if (sand >= 70 && clay < 15) return "sableuse";
   if (sand >= 55 && silt >= 20 && clay < 20) return "sablo-limoneuse";
@@ -293,7 +303,6 @@ router.post("/analyze", async (req, res) => {
         );
       }
 
-      // Climat /40
       const sTemp = scoreRange(
         conditionsExploitation.tempMoyenne,
         c.climate.tmean.ideal[0],
@@ -323,7 +332,6 @@ router.post("/analyze", async (req, res) => {
 
       const scoreClimat = sTemp + sWinter + sPrecip;
 
-      // Sol /25
       const sPh = scoreRange(
         soil.phSol,
         c.soil.ph.ideal[0],
@@ -353,10 +361,8 @@ router.post("/analyze", async (req, res) => {
 
       const scoreSol = sPh + sSand + sSoc;
 
-      // Infrastructure /10
       const scoreInfrastructure = Math.max(0, 10 - infraPenalty);
 
-      // Demande /15
       let scoreDemande = c.demandScore15 ?? 10;
       if (objectifProduction === "transformation") {
         scoreDemande = clamp(scoreDemande + 1, 0, 15);
@@ -399,7 +405,6 @@ router.post("/analyze", async (req, res) => {
         name: c.name,
         scientificName: c.scientificName,
         imageUrl: c.imageUrl,
-
         niveauRisque,
         modeConseille,
         scoreTotal,
@@ -408,7 +413,6 @@ router.post("/analyze", async (req, res) => {
         scoreSurface,
         scoreInfrastructure,
         scoreDemande,
-
         justification,
         cultureGuide: c.guides?.cultureGuide ?? "",
         phytosanitaryRisks: c.guides?.phytosanitaryRisks ?? "",
@@ -422,9 +426,9 @@ router.post("/analyze", async (req, res) => {
       conditionsExploitation,
       results,
       soil: {
-          ...soil,
-          textureLabel,
-        },
+        ...soil,
+        textureLabel,
+      },
       meta: {
         latitude,
         longitude,
