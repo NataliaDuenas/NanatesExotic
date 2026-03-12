@@ -158,9 +158,12 @@ npm run dev           # http://localhost:5173
 ---
 
 ## Auteurs
-ALFEREZ CORDERO, Barbara Catalina
-DUEÑAS SALAMANCA, Natalia
-GÓMEZ ROSAS, Florencia
-JAYAT IDABERRRI, Agustina
-JAYAT IDABERRI, Belén
+| Nom |
+|---|
+| ALFEREZ CORDERO, Barbara Catalina |
+| DUEÑAS SALAMANCA, Natalia |
+| GÓMEZ ROSAS, Florencia |
+| JAYAT IDABERRI, Agustina |
+| JAYAT IDABERRI, Belén |
+ 
 Projet d'innovation à l'**IMT Atlantique** — 2026
